@@ -23,22 +23,6 @@
       import * as THREE from 'three';
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-      // Récupère la couleur depuis l'URL (ex: ?color=#00ff00)
-      const params = new URLSearchParams(window.location.search);
-      const colorParam = params.get('color');
-      
-      if (colorParam) {
-        const targetColor = new THREE.Color(colorParam);
-        // Applique la couleur à tous les Mesh
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            if (child.material?.color) {
-              child.material.color.set(targetColor);
-            }
-          }
-        });
-      }
       
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
@@ -76,6 +60,28 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+
+      const params = new URLSearchParams(window.location.search);
+      const colorParam = params.get('color');
+      
+      loader.load('model.gltf', (gltf) => {
+        scene.add(gltf.scene);
+      
+        // 💡 Appliquer la couleur une fois que le modèle est chargé
+        if (colorParam) {
+          const targetColor = new THREE.Color(colorParam);
+          gltf.scene.traverse((child) => {
+            if (child.isMesh && child.material?.color) {
+              child.material.color.set(targetColor);
+            }
+          });
+        }
+      
+        animate();
+      }, undefined, (error) => {
+        console.error('Erreur lors du chargement du modèle :', error);
+      });
+
     </script>
   </body>
 </html>
