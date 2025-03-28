@@ -24,6 +24,22 @@
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+      // Récupère la couleur depuis l'URL (ex: ?color=#00ff00)
+      const params = new URLSearchParams(window.location.search);
+      const colorParam = params.get('color');
+      
+      if (colorParam) {
+        const targetColor = new THREE.Color(colorParam);
+        // Applique la couleur à tous les Mesh
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            if (child.material?.color) {
+              child.material.color.set(targetColor);
+            }
+          }
+        });
+      }
+      
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
 
@@ -60,22 +76,6 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
-      // Récupère la couleur depuis l'URL (ex: ?color=#00ff00)
-      const params = new URLSearchParams(window.location.search);
-      const colorParam = params.get('color');
-      
-      if (colorParam) {
-        const targetColor = new THREE.Color(colorParam);
-        // Applique la couleur à tous les Mesh
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            if (child.material?.color) {
-              child.material.color.set(targetColor);
-            }
-          }
-        });
-      }
     </script>
   </body>
 </html>
