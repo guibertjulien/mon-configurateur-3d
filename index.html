@@ -61,16 +61,21 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      window.addEventListener("message", (event) => {
-        if (event.data?.type === "setColor") {
-          const color = new THREE.Color(event.data.color);
-          scene.traverse((child) => {
-            if (child.isMesh) {
-              child.material.color = color;
+      // Récupère la couleur depuis l'URL (ex: ?color=#00ff00)
+      const params = new URLSearchParams(window.location.search);
+      const colorParam = params.get('color');
+      
+      if (colorParam) {
+        const targetColor = new THREE.Color(colorParam);
+        // Applique la couleur à tous les Mesh
+        scene.traverse((child) => {
+          if (child.isMesh) {
+            if (child.material?.color) {
+              child.material.color.set(targetColor);
             }
-          });
-        }
-      });
+          }
+        });
+      }
     </script>
   </body>
 </html>
