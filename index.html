@@ -4,11 +4,18 @@
     <meta charset="UTF-8" />
     <title>GLTF Viewer</title>
     <style>
-      body { margin: 0; overflow: hidden; }
-      canvas { width: 100vw; height: 100vh; display: block; }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
     </style>
 
-    <!-- Import map pour Three.js + add-ons -->
     <script type="importmap">
     {
       "imports": {
@@ -18,16 +25,22 @@
     }
     </script>
   </head>
+
   <body>
     <script type="module">
       import * as THREE from 'three';
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-      
+
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
 
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
       camera.position.set(2, 2, 3);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -41,13 +54,34 @@
       light.position.set(0, 1, 0);
       scene.add(light);
 
+      const params = new URLSearchParams(window.location.search);
+      const colorParam = params.get('color');
+
       const loader = new GLTFLoader();
-      loader.load('model.gltf', (gltf) => {
-        scene.add(gltf.scene);
-        animate();
-      }, undefined, (error) => {
-        console.error('Erreur lors du chargement du modèle :', error);
-      });
+      loader.load(
+        'model.gltf',
+        (gltf) => {
+          scene.add(gltf.scene);
+
+          // Appliquer la couleur si paramètre dans l’URL
+          if (colorParam) {
+            const decodedColor = decodeURIComponent(colorParam);
+            const color = new THREE.Color(decodedColor);
+
+            gltf.scene.traverse((child) => {
+              if (child.isMesh && child.material?.color) {
+                child.material.color.set(color);
+              }
+            });
+          }
+
+          animate();
+        },
+        undefined,
+        (error) => {
+          console.error('Erreur lors du chargement du modèle :', error);
+        }
+      );
 
       function animate() {
         requestAnimationFrame(animate);
@@ -60,28 +94,6 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
-      const params = new URLSearchParams(window.location.search);
-      const colorParam = params.get('color');
-      
-      loader.load('model.gltf', (gltf) => {
-        scene.add(gltf.scene);
-      
-        // 💡 Appliquer la couleur une fois que le modèle est chargé
-        if (colorParam) {
-          const targetColor = new THREE.Color(colorParam);
-          gltf.scene.traverse((child) => {
-            if (child.isMesh && child.material?.color) {
-              child.material.color.set(targetColor);
-            }
-          });
-        }
-      
-        animate();
-      }, undefined, (error) => {
-        console.error('Erreur lors du chargement du modèle :', error);
-      });
-
     </script>
   </body>
 </html>
