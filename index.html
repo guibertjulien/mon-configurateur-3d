@@ -8,7 +8,6 @@
         margin: 0;
         overflow: hidden;
       }
-
       canvas {
         display: block;
         width: 100vw;
@@ -27,7 +26,6 @@
   </head>
 
   <body>
-    <!-- Champ caché pour mise à jour externe -->
     <input type="hidden" id="state" value="" />
 
     <script type="module">
@@ -58,25 +56,12 @@
       scene.add(light);
 
       const loader = new GLTFLoader();
-      const params = new URLSearchParams(window.location.search);
-      const colorParam = params.get('color');
 
       loader.load(
         'model.gltf',
         (gltf) => {
           scene.add(gltf.scene);
-
-          // couleur initiale depuis ?color=
-          if (colorParam) {
-            const decodedColor = decodeURIComponent(colorParam);
-            const color = new THREE.Color(decodedColor);
-            gltf.scene.traverse((child) => {
-              if (child.isMesh && child.material?.color) {
-                child.material.color.set(color);
-              }
-            });
-          }
-
+          applyColorFromHash(); // Applique la couleur au démarrage si hash présent
           animate();
         },
         undefined,
@@ -97,25 +82,32 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      // Ajoute le listener hashchange
-      window.addEventListener('hashchange', () => {
+      // Fonction qui lit la couleur depuis #color=... et l'applique
+      function applyColorFromHash() {
         const hash = decodeURIComponent(location.hash.slice(1));
         const hashParams = new URLSearchParams(hash);
         const color = hashParams.get('color');
         if (color) {
-          const newColor = new THREE.Color(color);
-          scene.traverse((child) => {
-            if (child.isMesh && child.material?.color) {
-              child.material.color.set(newColor);
-            }
-          });
+          try {
+            const newColor = new THREE.Color(color);
+            scene.traverse((child) => {
+              if (child.isMesh && child.material?.color) {
+                child.material.color.set(newColor);
+              }
+            });
+          } catch (e) {
+            console.warn('❌ Couleur non reconnue :', color);
+          }
         }
-      });
-      
-      // Appelle au démarrage si un hash est déjà présent
+      }
+
+      // Écoute les changements de hash (ex: #color=%23ff0000)
+      window.addEventListener('hashchange', applyColorFromHash);
+
+      // Appelle manuellement au démarrage si hash déjà présent
       window.dispatchEvent(new Event('hashchange'));
 
-      // 🔁 Change dynamiquement la couleur via <input id="state" value='{"type":"setColor","color":"#ff0000"}'>
+      // Écoute les changements sur l'input#state
       let lastState = '';
       setInterval(() => {
         const input = document.getElementById('state');
