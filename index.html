@@ -97,7 +97,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
-      // 🔁 Change la couleur dynamiquement si hash change (#color=%23ff0000)
+      // Ajoute le listener hashchange
       window.addEventListener('hashchange', () => {
         const hash = decodeURIComponent(location.hash.slice(1));
         const hashParams = new URLSearchParams(hash);
@@ -111,6 +111,9 @@
           });
         }
       });
+      
+      // Appelle au démarrage si un hash est déjà présent
+      window.dispatchEvent(new Event('hashchange'));
 
       // 🔁 Change dynamiquement la couleur via <input id="state" value='{"type":"setColor","color":"#ff0000"}'>
       let lastState = '';
