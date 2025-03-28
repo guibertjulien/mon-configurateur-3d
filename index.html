@@ -42,7 +42,7 @@
       scene.add(light);
 
       const loader = new GLTFLoader();
-      loader.load('Box.gltf', (gltf) => {
+      loader.load('model.gltf', (gltf) => {
         scene.add(gltf.scene);
         animate();
       }, undefined, (error) => {
