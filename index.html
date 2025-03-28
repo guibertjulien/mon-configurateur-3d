@@ -10,9 +10,9 @@
       }
 
       canvas {
+        display: block;
         width: 100vw;
         height: 100vh;
-        display: block;
       }
     </style>
 
@@ -27,6 +27,9 @@
   </head>
 
   <body>
+    <!-- Champ caché pour mise à jour externe -->
+    <input type="hidden" id="state" value="" />
+
     <script type="module">
       import * as THREE from 'three';
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -54,20 +57,19 @@
       light.position.set(0, 1, 0);
       scene.add(light);
 
+      const loader = new GLTFLoader();
       const params = new URLSearchParams(window.location.search);
       const colorParam = params.get('color');
 
-      const loader = new GLTFLoader();
       loader.load(
         'model.gltf',
         (gltf) => {
           scene.add(gltf.scene);
 
-          // Appliquer la couleur si paramètre dans l’URL
+          // couleur initiale depuis ?color=
           if (colorParam) {
             const decodedColor = decodeURIComponent(colorParam);
             const color = new THREE.Color(decodedColor);
-
             gltf.scene.traverse((child) => {
               if (child.isMesh && child.material?.color) {
                 child.material.color.set(color);
@@ -79,7 +81,7 @@
         },
         undefined,
         (error) => {
-          console.error('Erreur lors du chargement du modèle :', error);
+          console.error('Erreur chargement modèle :', error);
         }
       );
 
@@ -95,10 +97,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
 
+      // 🔁 Change la couleur dynamiquement si hash change (#color=%23ff0000)
       window.addEventListener('hashchange', () => {
-        const hash = decodeURIComponent(location.hash.slice(1)); // Ex : color=%23ff0000
-        const params = new URLSearchParams(hash);
-        const color = params.get('color');
+        const hash = decodeURIComponent(location.hash.slice(1));
+        const hashParams = new URLSearchParams(hash);
+        const color = hashParams.get('color');
         if (color) {
           const newColor = new THREE.Color(color);
           scene.traverse((child) => {
@@ -109,6 +112,27 @@
         }
       });
 
+      // 🔁 Change dynamiquement la couleur via <input id="state" value='{"type":"setColor","color":"#ff0000"}'>
+      let lastState = '';
+      setInterval(() => {
+        const input = document.getElementById('state');
+        if (!input || input.value === lastState) return;
+        lastState = input.value;
+
+        try {
+          const data = JSON.parse(input.value);
+          if (data.type === 'setColor' && data.color) {
+            const newColor = new THREE.Color(data.color);
+            scene.traverse((child) => {
+              if (child.isMesh && child.material?.color) {
+                child.material.color.set(newColor);
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('⛔ Erreur parsing JSON de <input#state> :', e);
+        }
+      }, 300);
     </script>
   </body>
 </html>
