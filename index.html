@@ -5,19 +5,24 @@
     <title>GLTF Viewer</title>
     <style>
       body { margin: 0; overflow: hidden; }
-      canvas { display: block; width: 100vw; height: 100vh; }
+      canvas { width: 100vw; height: 100vh; display: block; }
     </style>
+
+    <!-- Import map pour Three.js + add-ons -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+      }
+    }
+    </script>
   </head>
   <body>
-    <script type="importmap">
-{
-    "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js"
-    }
-}</script>
     <script type="module">
-      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js';
-      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
@@ -41,7 +46,7 @@
         scene.add(gltf.scene);
         animate();
       }, undefined, (error) => {
-        console.error('Erreur de chargement du modèle :', error);
+        console.error('Erreur lors du chargement du modèle :', error);
       });
 
       function animate() {
