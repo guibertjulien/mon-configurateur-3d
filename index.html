@@ -94,6 +94,21 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+
+      window.addEventListener('hashchange', () => {
+        const hash = decodeURIComponent(location.hash.slice(1)); // Ex : color=%23ff0000
+        const params = new URLSearchParams(hash);
+        const color = params.get('color');
+        if (color) {
+          const newColor = new THREE.Color(color);
+          scene.traverse((child) => {
+            if (child.isMesh && child.material?.color) {
+              child.material.color.set(newColor);
+            }
+          });
+        }
+      });
+
     </script>
   </body>
 </html>
