@@ -60,6 +60,17 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+
+      window.addEventListener("message", (event) => {
+        if (event.data?.type === "setColor") {
+          const color = new THREE.Color(event.data.color);
+          scene.traverse((child) => {
+            if (child.isMesh) {
+              child.material.color = color;
+            }
+          });
+        }
+      });
     </script>
   </body>
 </html>
